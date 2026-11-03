@@ -14,39 +14,17 @@ import 'core/services/supabase_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Indonesian locale for Intl date formatting
-  try {
-    await initializeDateFormatting('id_ID', null);
-  } catch (e) {
-    debugPrint('Locale format error: $e');
-  }
-
   // 1. SharedPreferences
   final prefs = await SharedPreferences.getInstance();
 
   // 2. Initialize Drift SQLite Database
-  late final AppDatabase database;
-  try {
-    database = AppDatabase();
-    // 3. Seed Demo Data if First Launch
-    final seeder = DatabaseSeeder(database);
-    await seeder.seedIfEmpty();
-  } catch (e, stack) {
-    debugPrint('Database init/seed error: $e\n$stack');
-    database = AppDatabase();
-  }
+  final database = AppDatabase();
 
-  // 4. Initialize Supabase (with offline fallback)
-  try {
-    await SupabaseService.initialize();
-  } catch (e) {
-    debugPrint('Supabase init error: $e');
-  }
-
-  // 5. Determine Initial Route
+  // 3. Determine Initial Route
   final hasSession = prefs.getString(AppConstants.keyUserSession) != null;
   final initialRoute = hasSession ? AppRoutes.dashboard : AppRoutes.landing;
 
+  // Mount UI immediately so screen never hangs on splash/background!
   runApp(
     KasirProApp(
       database: database,
@@ -54,6 +32,26 @@ void main() async {
       initialRoute: initialRoute,
     ),
   );
+
+  // Non-blocking background initializations:
+  Future.microtask(() async {
+    try {
+      await initializeDateFormatting('id_ID', null);
+    } catch (_) {}
+
+    try {
+      final seeder = DatabaseSeeder(database);
+      await seeder.seedIfEmpty().timeout(const Duration(seconds: 4));
+    } catch (e) {
+      debugPrint('Background seeder note: $e');
+    }
+
+    try {
+      await SupabaseService.initialize().timeout(const Duration(seconds: 3));
+    } catch (e) {
+      debugPrint('Supabase init note: $e');
+    }
+  });
 }
 
 class KasirProApp extends StatelessWidget {
