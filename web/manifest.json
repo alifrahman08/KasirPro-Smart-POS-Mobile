@@ -1,11 +1,11 @@
 {
-    "name": "kasirpro",
-    "short_name": "kasirpro",
+    "name": "KasirPro — Smart POS Mobile",
+    "short_name": "KasirPro",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#1E5E3A",
+    "theme_color": "#1E5E3A",
+    "description": "Aplikasi Kasir dan Manajemen Stok Pintar UMKM",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

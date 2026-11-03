@@ -29,7 +29,17 @@ part 'app_database.g.dart';
   SyncQueue,
 ])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? e]) : super(e ?? driftDatabase(name: 'kasirpro_db'));
+  AppDatabase([QueryExecutor? e])
+      : super(
+          e ??
+              driftDatabase(
+                name: 'kasirpro_db',
+                web: DriftWebOptions(
+                  sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+                  driftWorker: Uri.parse('drift_worker.js'),
+                ),
+              ),
+        );
 
   @override
   int get schemaVersion => 1;

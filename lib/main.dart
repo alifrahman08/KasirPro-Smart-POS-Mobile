@@ -15,20 +15,33 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Indonesian locale for Intl date formatting
-  await initializeDateFormatting('id_ID', null);
+  try {
+    await initializeDateFormatting('id_ID', null);
+  } catch (e) {
+    debugPrint('Locale format error: $e');
+  }
 
   // 1. SharedPreferences
   final prefs = await SharedPreferences.getInstance();
 
   // 2. Initialize Drift SQLite Database
-  final database = AppDatabase();
-
-  // 3. Seed Demo Data if First Launch
-  final seeder = DatabaseSeeder(database);
-  await seeder.seedIfEmpty();
+  late final AppDatabase database;
+  try {
+    database = AppDatabase();
+    // 3. Seed Demo Data if First Launch
+    final seeder = DatabaseSeeder(database);
+    await seeder.seedIfEmpty();
+  } catch (e, stack) {
+    debugPrint('Database init/seed error: $e\n$stack');
+    database = AppDatabase();
+  }
 
   // 4. Initialize Supabase (with offline fallback)
-  await SupabaseService.initialize();
+  try {
+    await SupabaseService.initialize();
+  } catch (e) {
+    debugPrint('Supabase init error: $e');
+  }
 
   // 5. Determine Initial Route
   final hasSession = prefs.getString(AppConstants.keyUserSession) != null;
